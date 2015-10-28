@@ -2,10 +2,18 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <math.h>
 
 using namespace std;
 
 const bool printouts = true;
+
+int euclideanDistance(double p1[], double p2[])
+{
+    double distSum = pow(p1[0] - p2[0], 2) + pow(p1[1] - p2[1], 2);
+    
+    return round(sqrt(distSum));
+}
 
 int main()
 {
