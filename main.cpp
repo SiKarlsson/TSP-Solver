@@ -75,7 +75,7 @@ int main()
     // for all edge pairs in current path
     while (true) {
         change = false;
-        for (int j = 0; j < N - 1; j++) {
+        for (int j = 1; j < N - 1; j++) {
             int prev = j - 1;
             if (prev < 0) {
                 prev = N - 1;
