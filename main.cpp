@@ -15,14 +15,14 @@ int euclideanDistance(double x1, double y1, double x2, double y2)
     return round(sqrt(distSum));
 }
 
-void swapEdges(double *I[], int a, int b)
+void swapEdges(int *I[], int a, int b)
 {
     double temp = (*I)[a];
     (*I)[a] = (*I)[b];
     (*I)[b] = temp;
 }
 
-void printIndexes(int I[], int N)
+void printIndexes(double I[], int N)
 {
     for (int i = 0; i < N; ++i)
     {
@@ -75,7 +75,7 @@ int main()
     // for all edge pairs in current path
     while (true) {
         change = false;
-        for (int j = 1; j < N - 1; j++) {
+        for (int j = 0; j < N - 1; j++) {
             int prev = j - 1;
             if (prev < 0) {
                 prev = N - 1;
