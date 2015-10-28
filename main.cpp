@@ -24,7 +24,7 @@ void swapEdges(double* coordinates[][2], int a, int b)
     *coordinates[b] = temp;
 }
 
-void printIndexes(double coordinates[][2], int N)
+void printIndexes(double* coordinates[][2], int N)
 {
     for (int i = 0; i < N; ++i)
     {
@@ -44,7 +44,7 @@ int main()
         cout << "N = " << N << endl;
     }
 
-    double coordinates[N][2];
+    double* coordinates[N][2];
 
     string x;
     string y;
@@ -52,11 +52,11 @@ int main()
     for (int i = 0; i < N; ++i) {
         cin >> x >> y;
 
-        (coordinates)[i][0] = stod(x);
-        (coordinates)[i][1] = stod(y);
+        (*coordinates)[i][0] = stod(x);
+        (*coordinates)[i][1] = stod(y);
 
         if (printouts) {
-            cout << "x: " << (coordinates)[i][0] << ", y: " << (coordinates)[i][1] << endl;
+            cout << "x: " << (*coordinates)[i][0] << ", y: " << (*coordinates)[i][1] << endl;
         }
     }
 
