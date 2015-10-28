@@ -22,7 +22,7 @@ void swapEdges(double *I[], int a, int b)
     (*I)[b] = temp;
 }
 
-void printIndexes(double I[], int N)
+void printIndexes(int I[], int N)
 {
     for (int i = 0; i < N; ++i)
     {
@@ -63,14 +63,14 @@ int main()
 
     // 2-opt
     int totalDistance = 0;
-    
+
     for (int i = 0; i < N - 1; i++) {
         totalDistance += euclideanDistance(X[i], Y[i], X[i + 1], Y[i + 1]);
     }
 
     totalDistance += euclideanDistance(X[N - 1], Y[N - 1], X[0], Y[0]);
 
-    bool change;  
+    bool change;
 
     // for all edge pairs in current path
     while (true) {
@@ -89,10 +89,10 @@ int main()
                 next = 0;
                 nextnext = 1;
             }
-            int newDistance = totalDistance 
-                - euclideanDistance(X[prev], Y[prev], X[j], Y[j]) 
-                - euclideanDistance(X[nextnext], Y[nextnext], X[next], Y[next]) 
-                + euclideanDistance(X[prev], Y[prev], X[next], Y[next]) 
+            int newDistance = totalDistance
+                - euclideanDistance(X[prev], Y[prev], X[j], Y[j])
+                - euclideanDistance(X[nextnext], Y[nextnext], X[next], Y[next])
+                + euclideanDistance(X[prev], Y[prev], X[next], Y[next])
                 + euclideanDistance(X[j], Y[j], X[nextnext], Y[nextnext]);
             if (newDistance < totalDistance) {
                 totalDistance = newDistance;
@@ -110,7 +110,14 @@ int main()
         }
     }
 
-    printIndexes(path, N);
+
+    int* indexes = new int[N];
+    for (int i = 0; i < N; ++i)
+    {
+        indexes[(int)path[i]] = i;
+    }
+
+    printIndexes(indexes, N);
 
     return 0;
 }
