@@ -44,7 +44,7 @@ int main()
         cout << "N = " << N << endl;
     }
 
-    double coordinates[N][2];
+    double* xlist = new double[N];
 
     string x;
     string y;
@@ -62,7 +62,7 @@ int main()
 
     printIndexes(coordinates, N);
 
-    swapEdges(coordinates, 0, 1);
+    swapEdges(arp, 0, 1);
 
     printIndexes(coordinates, N);
 
