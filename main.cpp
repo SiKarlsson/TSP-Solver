@@ -15,20 +15,18 @@ int euclideanDistance(double p1[], double p2[])
     return round(sqrt(distSum));
 }
 
-void swapEdges(double* coordinates[][2], int a, int b)
+void swapEdges(double *I[], int a, int b)
 {
-    double temp[2];
-    temp[0] = *coordinates[a][0];
-    temp[1] = *coordinates[a][1];
-    *coordinates[a] = *coordinates[b];
-    *coordinates[b] = temp;
+    double temp = (*I)[a];
+    (*I)[a] = (*I)[b];
+    (*I)[b] = temp;
 }
 
-void printIndexes(double coordinates[][2], int N)
+void printIndexes(double I[], int N)
 {
     for (int i = 0; i < N; ++i)
     {
-        cout << i << endl;
+        cout << I[i] << endl;
     }
 }
 
@@ -44,7 +42,9 @@ int main()
         cout << "N = " << N << endl;
     }
 
-    double* xlist = new double[N];
+    double* X = new double[N];
+    double* Y = new double[N];
+    double* I = new double[N];
 
     string x;
     string y;
@@ -52,19 +52,28 @@ int main()
     for (int i = 0; i < N; ++i) {
         cin >> x >> y;
 
-        (coordinates)[i][0] = stod(x);
-        (coordinates)[i][1] = stod(y);
+        X[i] = stod(x);
+        Y[i] = stod(y);
+        I[i] = i;
 
         if (printouts) {
-            cout << "x: " << (coordinates)[i][0] << ", y: " << (coordinates)[i][1] << endl;
+            cout << "x: " << X[i] << ", y: " << Y[i] << endl;
         }
     }
 
-    printIndexes(coordinates, N);
+    /*
+    for (int i = 1; i < N; ++i)
+    {
+        double distSum = pow(X[0] - p2[0], 2) + pow(p1[1] - p2[1], 2);
 
-    swapEdges(arp, 0, 1);
+        return round(sqrt(distSum));
+    }*/
 
-    printIndexes(coordinates, N);
+    printIndexes(I, N);
+
+    swapEdges(&I, 2, 1);
+
+    printIndexes(I, N);
 
     return 0;
 }
