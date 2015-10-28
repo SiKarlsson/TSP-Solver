@@ -6,7 +6,7 @@
 
 using namespace std;
 
-const bool printouts = true;
+const bool printouts = false;
 
 int euclideanDistance(double p1[], double p2[])
 {
@@ -60,18 +60,6 @@ int main()
             cout << "x: " << X[i] << ", y: " << Y[i] << endl;
         }
     }
-
-    /*
-    for (int i = 1; i < N; ++i)
-    {
-        double distSum = pow(X[0] - p2[0], 2) + pow(p1[1] - p2[1], 2);
-
-        return round(sqrt(distSum));
-    }*/
-
-    printIndexes(I, N);
-
-    swapEdges(&I, 2, 1);
 
     printIndexes(I, N);
 
