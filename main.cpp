@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <math.h>
+#include <limits.h>
 
 using namespace std;
 
@@ -15,7 +16,7 @@ int euclideanDistance(double x1, double y1, double x2, double y2)
     return round(sqrt(distSum));
 }
 
-void swapEdges(int *I[], int a, int b)
+void swapEdges(double *I[], int a, int b)
 {
     double temp = (*I)[a];
     (*I)[a] = (*I)[b];
@@ -30,15 +31,63 @@ void printIndexes(double I[], int N)
     }
 }
 
+void twoOpt(int N, double *X[], double *Y[], double *path[])
+{
+    bool change;
+
+    int totalDistance = 0;
+
+    for (int i = 0; i < N - 1; i++) {
+        totalDistance += euclideanDistance((*X)[i], (*Y)[i], (*X)[i + 1], (*Y)[i + 1]);
+    }
+
+    totalDistance += euclideanDistance((*X)[N - 1], (*Y)[N - 1], (*X)[0], (*Y)[0]);
+
+    while (true) {
+        change = false;
+        for (int j = 0; j < N - 1; j++) {
+            int prev = j - 1;
+            if (prev < 0) {
+                prev = N - 1;
+            }
+            int next = j + 1;
+            int nextnext = j + 2;
+            if (nextnext > N - 1) {
+                nextnext = 0;
+            }
+            if (next > N - 1) {
+                next = 0;
+                nextnext = 1;
+            }
+            int newDistance = totalDistance
+                - euclideanDistance((*X)[prev], (*Y)[prev], (*X)[j], (*Y)[j])
+                - euclideanDistance((*X)[nextnext], (*Y)[nextnext], (*X)[next], (*Y)[next])
+                + euclideanDistance((*X)[prev], (*Y)[prev], (*X)[next], (*Y)[next])
+                + euclideanDistance((*X)[j], (*Y)[j], (*X)[nextnext], (*Y)[nextnext]);
+            if (newDistance < totalDistance) {
+                totalDistance = newDistance;
+                swapEdges(path, j, next);
+                swapEdges(X, j, next);
+                swapEdges(Y, j, next);
+                change = true;
+                break;
+            }
+        }
+        if (change) {
+            continue;
+        } else {
+            break;
+        }
+    }
+}
+
 int main()
 {
     int N;
 
-    // read N
     cin >> N;
 
     if (printouts) {
-        // print N
         cout << "N = " << N << endl;
     }
 
@@ -61,63 +110,9 @@ int main()
         }
     }
 
-    // 2-opt
-    int totalDistance = 0;
+    twoOpt(N, &X, &Y, &path);
 
-    for (int i = 0; i < N - 1; i++) {
-        totalDistance += euclideanDistance(X[i], Y[i], X[i + 1], Y[i + 1]);
-    }
-
-    totalDistance += euclideanDistance(X[N - 1], Y[N - 1], X[0], Y[0]);
-
-    bool change;
-
-    // for all edge pairs in current path
-    while (true) {
-        change = false;
-        for (int j = 0; j < N - 1; j++) {
-            int prev = j - 1;
-            if (prev < 0) {
-                prev = N - 1;
-            }
-            int next = j + 1;
-            int nextnext = j + 2;
-            if (nextnext > N - 1) {
-                nextnext = 0;
-            }
-            if (next > N - 1) {
-                next = 0;
-                nextnext = 1;
-            }
-            int newDistance = totalDistance
-                - euclideanDistance(X[prev], Y[prev], X[j], Y[j])
-                - euclideanDistance(X[nextnext], Y[nextnext], X[next], Y[next])
-                + euclideanDistance(X[prev], Y[prev], X[next], Y[next])
-                + euclideanDistance(X[j], Y[j], X[nextnext], Y[nextnext]);
-            if (newDistance < totalDistance) {
-                totalDistance = newDistance;
-                swapEdges(&path, j, next);
-                swapEdges(&X, j, next);
-                swapEdges(&Y, j, next);
-                change = true;
-                break;
-            }
-        }
-        if (change) {
-            continue;
-        } else {
-            break;
-        }
-    }
-
-
-    int* indexes = new int[N];
-    for (int i = 0; i < N; ++i)
-    {
-        indexes[(int)path[i]] = i;
-    }
-
-    printIndexes(indexes, N);
+    printIndexes(path, N);
 
     return 0;
 }
