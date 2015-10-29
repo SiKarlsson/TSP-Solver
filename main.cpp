@@ -4,6 +4,7 @@
 #include <vector>
 #include <math.h>
 #include <limits.h>
+#include <algorithm>
 
 using namespace std;
 
@@ -18,9 +19,14 @@ int euclideanDistance(double x1, double y1, double x2, double y2)
 
 void swapEdges(double *I[], int a, int b)
 {
-    double temp = (*I)[a];
-    (*I)[a] = (*I)[b];
-    (*I)[b] = temp;
+    int temp;
+    int count = abs(b-a)+1;
+    int mini = min(a, b);
+    for (int i = 0; i < count/2; ++i) {
+        temp = (*I)[mini+count-i-1];
+        (*I)[mini+count-i-1] = (*I)[mini+i];
+        (*I)[mini+i] = temp;
+    }
 }
 
 void printIndexes(double I[], int N)
@@ -33,13 +39,19 @@ void printIndexes(double I[], int N)
 
 void twoOpt(int N, double *X[], double *Y[], double *path[])
 {
-    bool change;
+    if (N < 4) {
+        return;
+    }
 
-    while (true) {
+    bool change = true;
+
+    int times = 250;
+
+    while (change && times > 0) {
+        --times;
         change = false;
-        for (int j = 0; j < N - 1; ++j) {
+        for (int j = 0; j < N; ++j) {
             for (int k = (j + 1); k < N - 1; ++k) {
-                //cout << "j: " << j << ", k: " << k << endl;
                 int prev = j - 1;
                 if (prev < 0) {
                     prev = N - 1;
@@ -49,34 +61,30 @@ void twoOpt(int N, double *X[], double *Y[], double *path[])
                     next = 0;
                 }
 
+                if (j == 0 && k == N - 2) {
+                    prev = 1;
+                    next = N-2;
+                }
+
                 int new_edge = euclideanDistance((*X)[j], (*Y)[j], (*X)[next], (*Y)[next])
                    + euclideanDistance((*X)[k], (*Y)[k], (*X)[prev], (*Y)[prev]);
 
-                //cout << "new_edge: " << new_edge << endl;
-
                 int old_edge = euclideanDistance((*X)[prev], (*Y)[prev], (*X)[j], (*Y)[j])
-                   + euclideanDistance((*X)[k], (*Y)[k], (*X)[next], (*Y)[prev]);
+                   + euclideanDistance((*X)[k], (*Y)[k], (*X)[next], (*Y)[next]);
 
-                //cout << "old_edge: " << old_edge << endl;
-
-                if (new_edge
-                  < old_edge) {
-                    //cout << "change: true" << endl;
+                if (new_edge < old_edge) {
                     swapEdges(path, j, k);
                     swapEdges(X, j, k);
                     swapEdges(Y, j, k);
-                    //change = true;
+                    change = true;
+                }
+                if (change) {
                     break;
                 }
             }
             if (change) {
                 break;
             }
-        }
-        if (change) {
-            continue;
-        } else {
-            break;
         }
     }
 }
@@ -111,6 +119,7 @@ int main()
     }
 
     twoOpt(N, &X, &Y, &path);
+    //swapEdges(&path, 6, 4);
 
     printIndexes(path, N);
 
