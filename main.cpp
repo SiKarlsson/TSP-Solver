@@ -44,7 +44,7 @@ inline std::vector<int> twoOpt(std::vector<double> X, std::vector<double> Y, std
     // Rekord: 310
     int times = 300;
 
-    int ed, mini, maxi, new_edge, old_edge;
+    int new_edge, old_edge;
 
     while (change && times > 0) {
         --times;
