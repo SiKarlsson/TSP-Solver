@@ -20,12 +20,12 @@ inline int euclideanDistance(double x1, double y1, double x2, double y2)
 inline std::vector<int> swapEdges(std::vector<int> tour, int x, int y)
 {
     int temp;
-    int count = abs(y-x)+1;
+    int count = abs(y - x) + 1;
     int mini = min(x, y);
-    for (int i = 0; i < count/2; ++i) {
-        temp = (tour)[mini+count-i-1];
-        (tour)[mini+count-i-1] = (tour)[mini+i];
-        (tour)[mini+i] = temp;
+    for (int i = 0; i < (count / 2); ++i) {
+        temp = tour[mini + count - i - 1];
+        tour[mini + count - i - 1] = tour[mini + i];
+        tour[mini + i] = temp;
     }
 
     return tour;
@@ -41,21 +41,17 @@ inline std::vector<int> twoOpt(std::vector<double> X, std::vector<double> Y, std
 
     bool change = true;
 
-    // Rekord: 310
-    int times = 300;
+    int new_edge, old_edge, prev, next;
 
-    int new_edge, old_edge;
-
-    while (change && times > 0) {
-        --times;
+    while (change) {
         change = false;
         for (int j = 0; j < N; ++j) {
             for (int k = (j + 1); k < N - 1; ++k) {
-                int prev = j - 1;
+                prev = j - 1;
                 if (prev < 0) {
                     prev = N - 1;
                 }
-                int next = k + 1;
+                next = k + 1;
                 if (next > N - 1) {
                     next = 0;
                 }
@@ -65,8 +61,8 @@ inline std::vector<int> twoOpt(std::vector<double> X, std::vector<double> Y, std
                     next = N-2;
                 }
 
-                new_edge = (distances)[tour[j]][tour[next]] + (distances)[tour[k]][tour[prev]];
-                old_edge = (distances)[tour[j]][tour[prev]] + (distances)[tour[k]][tour[next]];
+                new_edge = distances[tour[j]][tour[next]] + distances[tour[k]][tour[prev]];
+                old_edge = distances[tour[j]][tour[prev]] + distances[tour[k]][tour[next]];
 
                 if (new_edge < old_edge) {
                     tour = swapEdges(tour, j, k);
@@ -97,8 +93,7 @@ inline std::vector<int> greedyTour(std::vector<int> tour, std::vector<double> X,
     for (int i = 1; i < tour.size(); ++i) {
         best = -1;
         for (int j = 0; j < tour.size(); ++j) {
-            if (! used[j] && (best == -1 || distances[tour[i - 1]][j] < distances[tour[i - 1]][best]))
-            {
+            if (! used[j] && (best == -1 || distances[tour[i - 1]][j] < distances[tour[i - 1]][best])) {
                 best = j;
             }
         }
@@ -109,7 +104,7 @@ inline std::vector<int> greedyTour(std::vector<int> tour, std::vector<double> X,
     return tour;
 }
 
-std::vector<int> nearestNeighbour(std::vector<double> X, std::vector<double> Y, std::vector<int> tour, std::vector<std::vector<int> > distances)
+inline std::vector<int> nearestNeighbour(std::vector<double> X, std::vector<double> Y, std::vector<int> tour, std::vector<std::vector<int> > distances)
 {
     int nearestIndex, nearestFound, temp;
 
@@ -140,17 +135,12 @@ int main()
 
     std::cin >> N;
 
-    std::vector<int> tour;
-    std::vector<double> X;
-    std::vector<double> Y;
-    std::vector<std::vector<int> > distances;
+    std::vector<int> tour(N);
+    std::vector<double> X(N);
+    std::vector<double> Y(N);
+    std::vector<std::vector<int> > distances(N);
 
-    X.resize(N);
-    Y.resize(N);
-    tour.resize(N);
-
-    double x;
-    double y;
+    double x, y;
 
     for (int i = 0; i < N; ++i) {
         std::cin >> x >> y;
@@ -161,7 +151,6 @@ int main()
     }
 
     int ed;
-    distances.resize(N);
     for (int i = 0; i < N; ++i)
     {
         distances[i].resize(N);
