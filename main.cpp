@@ -10,11 +10,6 @@ using namespace std;
 
 const bool DEBUG = false;
 
-std::vector<int> tour;
-std::vector<double> X;
-std::vector<double> Y;
-std::vector<std::vector<int> > distances;
-
 inline int euclideanDistance(double x1, double y1, double x2, double y2)
 {
     double distSum = pow(x1 - x2, 2) + pow(y1 - y2, 2);
@@ -22,49 +17,36 @@ inline int euclideanDistance(double x1, double y1, double x2, double y2)
     return round(sqrt(distSum));
 }
 
-inline std::vector<double> reverseEdges(std::vector<double> TEST, int a, int b)
+inline std::vector<int> swapEdges(std::vector<int> tour, int x, int y)
 {
     int temp;
-    int count = abs(b-a)+1;
-    int mini = min(a, b);
+    int count = abs(y-x)+1;
+    int mini = min(x, y);
     for (int i = 0; i < count/2; ++i) {
-        temp = (TEST)[mini+count-i-1];
-        (TEST)[mini+count-i-1] = (TEST)[mini+i];
-        (TEST)[mini+i] = temp;
+        temp = (tour)[mini+count-i-1];
+        (tour)[mini+count-i-1] = (tour)[mini+i];
+        (tour)[mini+i] = temp;
     }
 
-    return TEST;
-
+    return tour;
 }
 
-inline std::vector<int> swapEdges(std::vector<int> TEST, int a, int b)
+inline std::vector<int> twoOpt(std::vector<double> X, std::vector<double> Y, std::vector<int> tour, std::vector<std::vector<int> > distances)
 {
-    int temp;
-    int count = abs(b-a)+1;
-    int mini = min(a, b);
-    for (int i = 0; i < count/2; ++i) {
-        temp = (TEST)[mini+count-i-1];
-        (TEST)[mini+count-i-1] = (TEST)[mini+i];
-        (TEST)[mini+i] = temp;
-    }
+    int N = tour.size();
 
-    return TEST;
-}
-
-inline std::vector<int> twoOpt(int N)
-{
     if (N < 4) {
         return tour;
     }
 
     bool change = true;
 
-    int times = 200;
+    // Rekord: 310
+    int times = 300;
 
     int ed, mini, maxi, new_edge, old_edge;
 
     while (change && times > 0) {
-    //while (change) {
         --times;
         change = false;
         for (int j = 0; j < N; ++j) {
@@ -88,24 +70,6 @@ inline std::vector<int> twoOpt(int N)
 
                 if (new_edge < old_edge) {
                     tour = swapEdges(tour, j, k);
-                    /*
-                    X = reverseEdges(X, j, k);
-                    Y = reverseEdges(Y, j, k);
-
-                    mini = min(j, k);
-                    maxi = max(j, k);
-
-                    for (int l = mini; l <= maxi; l++) {
-                        for (int m = 0; m < N; m++) {
-                            if (l != m) {
-                                ed = euclideanDistance((X)[l], (Y)[l], (X)[m], (Y)[m]);
-                                (distances)[l][m] = ed;
-                                (distances)[m][l] = ed;
-                            }
-                        }
-                    }
-                    */
-
                     change = true;
                 }
                 if (change) {
@@ -121,16 +85,7 @@ inline std::vector<int> twoOpt(int N)
     return tour;
 }
 
-inline std::vector<double> swapDoubles(std::vector<double> v, double x, double y)
-{
-    int temp = v[x];
-    v[x] = v[y];
-    v[y] = temp;
-
-    return v;
-}
-
-std::vector<int> nearestNeighbour()
+std::vector<int> nearestNeighbour(std::vector<double> X, std::vector<double> Y, std::vector<int> tour, std::vector<std::vector<int> > distances)
 {
     int nearestIndex, nearestFound, temp;
 
@@ -150,14 +105,6 @@ std::vector<int> nearestNeighbour()
         temp = tour[i + 1];
         tour[i + 1] = tour[nearestIndex];
         tour[nearestIndex] = temp;
-
-        temp = X[i + 1];
-        X[i + 1] = X[nearestIndex];
-        X[nearestIndex] = temp;
-
-        temp = Y[i + 1];
-        Y[i + 1] = Y[nearestIndex];
-        Y[nearestIndex] = temp;
     }
 
     return tour;
@@ -168,6 +115,11 @@ int main()
     int N;
 
     std::cin >> N;
+
+    std::vector<int> tour;
+    std::vector<double> X;
+    std::vector<double> Y;
+    std::vector<std::vector<int> > distances;
 
     X.resize(N);
     Y.resize(N);
@@ -200,9 +152,9 @@ int main()
         }
     }
 
-    tour = nearestNeighbour();
+    tour = nearestNeighbour(X, Y, tour, distances);
 
-    tour = twoOpt(N);
+    tour = twoOpt(X, Y, tour, distances);
 
     for (int i = 0; i < tour.size(); ++i)
     {
