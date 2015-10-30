@@ -184,7 +184,7 @@ int main()
         }
         totalDistance += distances[tour[tour.size()-1]][tour[0]];
 
-        cout << "total: " << totalDistance << endl;
+        std::cout << "total: " << totalDistance << endl;
     }
 
     return 0;
