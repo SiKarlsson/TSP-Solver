@@ -8,46 +8,63 @@
 
 using namespace std;
 
-const bool printouts = false;
+const bool DEBUG = false;
 
-int euclideanDistance(double x1, double y1, double x2, double y2)
+std::vector<int> tour;
+std::vector<double> X;
+std::vector<double> Y;
+std::vector<std::vector<int> > distances;
+
+inline int euclideanDistance(double x1, double y1, double x2, double y2)
 {
     double distSum = pow(x1 - x2, 2) + pow(y1 - y2, 2);
 
     return round(sqrt(distSum));
 }
 
-void swapEdges(double *I[], int a, int b)
+inline std::vector<double> reverseEdges(std::vector<double> TEST, int a, int b)
 {
     int temp;
     int count = abs(b-a)+1;
     int mini = min(a, b);
     for (int i = 0; i < count/2; ++i) {
-        temp = (*I)[mini+count-i-1];
-        (*I)[mini+count-i-1] = (*I)[mini+i];
-        (*I)[mini+i] = temp;
+        temp = (TEST)[mini+count-i-1];
+        (TEST)[mini+count-i-1] = (TEST)[mini+i];
+        (TEST)[mini+i] = temp;
     }
+
+    return TEST;
+
 }
 
-void printIndexes(double I[], int N)
+inline std::vector<int> swapEdges(std::vector<int> TEST, int a, int b)
 {
-    for (int i = 0; i < N; ++i)
-    {
-        cout << I[i] << endl;
+    int temp;
+    int count = abs(b-a)+1;
+    int mini = min(a, b);
+    for (int i = 0; i < count/2; ++i) {
+        temp = (TEST)[mini+count-i-1];
+        (TEST)[mini+count-i-1] = (TEST)[mini+i];
+        (TEST)[mini+i] = temp;
     }
+
+    return TEST;
 }
 
-void twoOpt(int N, double *X[], double *Y[], double *path[], vector<vector<int> > *distances)
+inline std::vector<int> twoOpt(int N)
 {
     if (N < 4) {
-        return;
+        return tour;
     }
 
     bool change = true;
 
-    int times = 300;
+    int times = 200;
+
+    int ed, mini, maxi, new_edge, old_edge;
 
     while (change && times > 0) {
+    //while (change) {
         --times;
         change = false;
         for (int j = 0; j < N; ++j) {
@@ -66,27 +83,28 @@ void twoOpt(int N, double *X[], double *Y[], double *path[], vector<vector<int> 
                     next = N-2;
                 }
 
-                int new_edge = (*distances)[j][next] + (*distances)[k][prev];
-                int old_edge = (*distances)[j][prev] + (*distances)[k][next];
+                new_edge = (distances)[tour[j]][tour[next]] + (distances)[tour[k]][tour[prev]];
+                old_edge = (distances)[tour[j]][tour[prev]] + (distances)[tour[k]][tour[next]];
 
                 if (new_edge < old_edge) {
-                    swapEdges(path, j, k);
-                    swapEdges(X, j, k);
-                    swapEdges(Y, j, k);
+                    tour = swapEdges(tour, j, k);
+                    /*
+                    X = reverseEdges(X, j, k);
+                    Y = reverseEdges(Y, j, k);
 
-                    int mini = min(j, k);
-                    int maxi = max(j, k);
-                    int ed;
+                    mini = min(j, k);
+                    maxi = max(j, k);
 
                     for (int l = mini; l <= maxi; l++) {
                         for (int m = 0; m < N; m++) {
                             if (l != m) {
-                                ed = euclideanDistance((*X)[l], (*Y)[l], (*X)[m], (*Y)[m]);
-                                (*distances)[l][m] = ed;
-                                (*distances)[m][l] = ed;
+                                ed = euclideanDistance((X)[l], (Y)[l], (X)[m], (Y)[m]);
+                                (distances)[l][m] = ed;
+                                (distances)[m][l] = ed;
                             }
                         }
                     }
+                    */
 
                     change = true;
                 }
@@ -99,39 +117,75 @@ void twoOpt(int N, double *X[], double *Y[], double *path[], vector<vector<int> 
             }
         }
     }
+
+    return tour;
+}
+
+inline std::vector<double> swapDoubles(std::vector<double> v, double x, double y)
+{
+    int temp = v[x];
+    v[x] = v[y];
+    v[y] = temp;
+
+    return v;
+}
+
+std::vector<int> nearestNeighbour()
+{
+    int nearestIndex, nearestFound, temp;
+
+    for (int i = 0; i < (tour.size() - 1); ++i)
+    {
+        nearestFound = INT_MAX;
+        nearestIndex = i + 1;
+
+        for (int j = (i + 1); j < tour.size(); ++j)
+        {
+            if (distances[tour[i]][tour[j]] < nearestFound) {
+                nearestIndex = j;
+                nearestFound = distances[tour[i]][tour[j]];
+            }
+        }
+
+        temp = tour[i + 1];
+        tour[i + 1] = tour[nearestIndex];
+        tour[nearestIndex] = temp;
+
+        temp = X[i + 1];
+        X[i + 1] = X[nearestIndex];
+        X[nearestIndex] = temp;
+
+        temp = Y[i + 1];
+        Y[i + 1] = Y[nearestIndex];
+        Y[nearestIndex] = temp;
+    }
+
+    return tour;
 }
 
 int main()
 {
     int N;
 
-    cin >> N;
+    std::cin >> N;
 
-    if (printouts) {
-        cout << "N = " << N << endl;
-    }
+    X.resize(N);
+    Y.resize(N);
+    tour.resize(N);
 
-    double* X = new double[N];
-    double* Y = new double[N];
-    double* path = new double[N];
-
-    string x;
-    string y;
+    double x;
+    double y;
 
     for (int i = 0; i < N; ++i) {
-        cin >> x >> y;
+        std::cin >> x >> y;
 
-        X[i] = stod(x);
-        Y[i] = stod(y);
-        path[i] = i;
-
-        if (printouts) {
-            cout << "x: " << X[i] << ", y: " << Y[i] << endl;
-        }
+        X[i] = x;
+        Y[i] = y;
+        tour[i] = i;
     }
 
     int ed;
-    vector<vector<int> > distances(N);
+    distances.resize(N);
     for (int i = 0; i < N; ++i)
     {
         distances[i].resize(N);
@@ -146,18 +200,14 @@ int main()
         }
     }
 
-    twoOpt(N, &X, &Y, &path, &distances);
+    tour = nearestNeighbour();
 
-    printIndexes(path, N);
+    tour = twoOpt(N);
 
-
-    int totalDistance = 0;
-
-    for (int i = 0; i < N - 1; i++) {
-        totalDistance += euclideanDistance(X[i], Y[i], X[i + 1], Y[i + 1]);
+    for (int i = 0; i < tour.size(); ++i)
+    {
+        std::cout << tour[i] << endl;
     }
-
-    totalDistance += euclideanDistance(X[N - 1], Y[N - 1], X[0], Y[0]);
 
     return 0;
 }
