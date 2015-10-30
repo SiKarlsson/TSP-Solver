@@ -8,7 +8,7 @@
 
 using namespace std;
 
-const bool DEBUG = false;
+const bool DEBUG = true;
 
 inline int euclideanDistance(double x1, double y1, double x2, double y2)
 {
@@ -85,6 +85,30 @@ inline std::vector<int> twoOpt(std::vector<double> X, std::vector<double> Y, std
     return tour;
 }
 
+inline std::vector<int> greedyTour(std::vector<int> tour, std::vector<double> X, std::vector<double> Y, std::vector<std::vector<int> > distances)
+{
+    int best;
+    bool used[tour.size()];
+    for (int i = 0; i < tour.size(); ++i)
+    {
+        used[i] = false;
+    }
+    used[0] = true;
+    for (int i = 1; i < tour.size(); ++i) {
+        best = -1;
+        for (int j = 0; j < tour.size(); ++j) {
+            if (! used[j] && (best == -1 || distances[tour[i - 1]][j] < distances[tour[i - 1]][best]))
+            {
+                best = j;
+            }
+        }
+        tour[i] = best;
+        used[best] = true;
+    }
+
+    return tour;
+}
+
 std::vector<int> nearestNeighbour(std::vector<double> X, std::vector<double> Y, std::vector<int> tour, std::vector<std::vector<int> > distances)
 {
     int nearestIndex, nearestFound, temp;
@@ -152,6 +176,8 @@ int main()
         }
     }
 
+    //tour = greedyTour(tour, X, Y, distances);
+
     tour = nearestNeighbour(X, Y, tour, distances);
 
     tour = twoOpt(X, Y, tour, distances);
@@ -159,6 +185,17 @@ int main()
     for (int i = 0; i < tour.size(); ++i)
     {
         std::cout << tour[i] << endl;
+    }
+
+    if (DEBUG) {
+        int totalDistance = 0;
+        for (int i = 0; i < tour.size() - 1; ++i)
+        {
+            totalDistance += distances[tour[i]][tour[i+1]];
+        }
+        totalDistance += distances[tour[tour.size()-1]][tour[0]];
+
+        cout << "total: " << totalDistance << endl;
     }
 
     return 0;
