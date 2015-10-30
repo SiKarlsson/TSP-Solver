@@ -45,7 +45,7 @@ void twoOpt(int N, double *X[], double *Y[], double *path[], vector<vector<int> 
 
     bool change = true;
 
-    int times = 350;
+    int times = 300;
 
     while (change && times > 0) {
         --times;
@@ -77,7 +77,7 @@ void twoOpt(int N, double *X[], double *Y[], double *path[], vector<vector<int> 
                     int mini = min(j, k);
                     int maxi = max(j, k);
                     int ed;
-                    
+
                     for (int l = mini; l <= maxi; l++) {
                         for (int m = 0; m < N; m++) {
                             if (l != m) {
@@ -130,12 +130,18 @@ int main()
         }
     }
 
+    int ed;
     vector<vector<int> > distances(N);
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; ++i)
+    {
         distances[i].resize(N);
-        for (int j = 0; j < N; j++) {
+    }
+    for (int i = 0; i < N; ++i) {
+        for (int j = i; j < N; ++j) {
             if (i != j) {
-                distances[i][j] = euclideanDistance(X[i], Y[i], X[j], Y[j]);
+                ed = euclideanDistance(X[i], Y[i], X[j], Y[j]);
+                distances[i][j] = ed;
+                distances[j][i] = ed;
             }
         }
     }
