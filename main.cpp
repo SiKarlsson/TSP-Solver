@@ -5,10 +5,13 @@
 #include <math.h>
 #include <limits.h>
 #include <algorithm>
+#include <queue>
 
-using namespace std;
+// toggle debug print outs
+const bool DEBUG = false;
 
-const bool DEBUG = true;
+// type edge<A, B>
+typedef std::pair<int, int> edge;
 
 inline int euclideanDistance(double x1, double y1, double x2, double y2)
 {
@@ -17,63 +20,76 @@ inline int euclideanDistance(double x1, double y1, double x2, double y2)
     return round(sqrt(distSum));
 }
 
-inline std::vector<int> swapEdges(std::vector<int> tour, int x, int y)
+inline std::vector<int> swapEdges(std::vector<int> tour, int x, int y, std::vector<int> &pos)
 {
-    int temp;
-    int count = abs(y - x) + 1;
-    int mini = min(x, y);
-    for (int i = 0; i < (count / 2); ++i) {
-        temp = tour[mini + count - i - 1];
-        tour[mini + count - i - 1] = tour[mini + i];
-        tour[mini + i] = temp;
+    int N = tour.size();
+    int numSwaps = (((x <= y ? y - x : (y + N) - x) + 1)/2);
+    int i = x;
+    int j = y;
+    for (int n = 0; n < numSwaps; ++n) {
+        std::swap(tour[i], tour[j]);
+        pos[tour[i]] = i;
+        pos[tour[j]] = j;
+        i = (i + 1) % N;        // one step to middle from left
+        j = ((j + N) - 1) % N;  // one step to middle from right
     }
 
     return tour;
 }
 
-inline std::vector<int> twoOpt(std::vector<double> X, std::vector<double> Y, std::vector<int> tour, std::vector<std::vector<int> > distances)
+inline std::vector<int> twoOpt(std::vector<int> tour,
+                               std::vector<std::vector<int> > distances,
+                               std::vector<std::vector<int> >neighbour,
+                               std::vector<int> &pos,
+                               int min, int max)
 {
-    int N = tour.size();
+    int N = distances[0].size();    // Number of nodes
+    int K = neighbour[0].size();    // Number of closest neighbours
 
-    if (N < 4) {
-        return tour;
-    }
+    int a, b, c, d;                 // edges AB and CD
+    int a_i, b_i, c_i, d_i;         // indexes of AB and CD
 
-    bool change = true;
+    bool twoOptimal = false;        // Instance is locally 2-optimal
+    while (!twoOptimal) {
+        twoOptimal = true;
 
-    int new_edge, old_edge, prev, next;
+        for (a_i = 0, b_i = 1; a_i < N; ++a_i, ++b_i) {
+            a = tour[a_i];
+            b = tour[b_i % N];
 
-    while (change) {
-        change = false;
-        for (int j = 0; j < N; ++j) {
-            for (int k = (j + 1); k < N - 1; ++k) {
-                prev = j - 1;
-                if (prev < 0) {
-                    prev = N - 1;
-                }
-                next = k + 1;
-                if (next > N - 1) {
-                    next = 0;
-                }
+            for (int k = 0; k < K; ++k)
+            {
+                c_i = pos[neighbour[a][k]]; // position of k closest neighbour
+                d_i = c_i + 1;              // position of k's next point
+                c = tour[c_i];
+                d = tour[d_i % N];
 
-                if (j == 0 && k == N - 2) {
-                    prev = 1;
-                    next = N-2;
+                // continue if looking at same pairs
+                if (b == c || a == d) {
+                    continue;
                 }
 
-                new_edge = distances[tour[j]][tour[next]] + distances[tour[k]][tour[prev]];
-                old_edge = distances[tour[j]][tour[prev]] + distances[tour[k]][tour[next]];
-
-                if (new_edge < old_edge) {
-                    tour = swapEdges(tour, j, k);
-                    change = true;
-                }
-                if (change) {
+                // threshold for swapping edges
+                if (distances[a][c] + min > distances[a][b] + max) {
                     break;
                 }
-            }
-            if (change) {
-                break;
+
+                // if swap reduces tour length
+                if (
+                    distances[a][c] + distances[b][d] <
+                    distances[a][b] + distances[c][d]
+                ) {
+                    // swap edges between b_i and c_i
+                    tour = swapEdges(tour, (b_i % N), c_i, pos);
+
+                    // new max threshold
+                    max = std::max(max, std::max(distances[a][c], distances[b][d]));
+
+                    // 2-opt was found
+                    twoOptimal = false;
+
+                    break;
+                }
             }
         }
     }
@@ -81,7 +97,8 @@ inline std::vector<int> twoOpt(std::vector<double> X, std::vector<double> Y, std
     return tour;
 }
 
-inline std::vector<int> greedyTour(std::vector<int> tour, std::vector<double> X, std::vector<double> Y, std::vector<std::vector<int> > distances)
+/*
+inline std::vector<int> greedyTour(std::vector<int> tour, std::vector<std::vector<int> > distances)
 {
     int best;
     bool used[tour.size()];
@@ -103,8 +120,9 @@ inline std::vector<int> greedyTour(std::vector<int> tour, std::vector<double> X,
 
     return tour;
 }
+*/
 
-inline std::vector<int> nearestNeighbour(std::vector<double> X, std::vector<double> Y, std::vector<int> tour, std::vector<std::vector<int> > distances)
+inline std::vector<int> nearestNeighbour(std::vector<int> tour, std::vector<std::vector<int>> distances)
 {
     int nearestIndex, nearestFound, temp;
 
@@ -131,49 +149,108 @@ inline std::vector<int> nearestNeighbour(std::vector<double> X, std::vector<doub
 
 int main()
 {
+    // number of points
     int N;
-
     std::cin >> N;
 
+    // number of neighbours to check on 2opt
+    int K = 100;
+    K = std::min(K, N);
+
+    // shortest distance between two points
+    int min = INT_MAX;
+
+    // longest distance between two points
+    int max = 0;
+
+    // tour of points visited
     std::vector<int> tour(N);
-    std::vector<double> X(N);
-    std::vector<double> Y(N);
-    std::vector<std::vector<int> > distances(N);
 
-    double x, y;
+    // indexes of points
+    std::vector<int> index(N);
 
-    for (int i = 0; i < N; ++i) {
-        std::cin >> x >> y;
+    // initial points vectors for X and Y coordinates
+    std::vector<double> X (N);
+    std::vector<double> Y (N);
 
-        X[i] = x;
-        Y[i] = y;
-        tour[i] = i;
-    }
+    // distance matrix
+    std::vector<std::vector<int>> distances (N, std::vector<int> (N));
 
-    int ed;
+    // neighbour matrix
+    std::vector<std::vector<int>> neighbour (N);
+
     for (int i = 0; i < N; ++i)
     {
-        distances[i].resize(N);
+        // i:th line of input contains X and Y coordinates of point i
+        std::cin >> X[i] >> Y[i];
     }
-    for (int i = 0; i < N; ++i) {
-        for (int j = i; j < N; ++j) {
-            if (i != j) {
-                ed = euclideanDistance(X[i], Y[i], X[j], Y[j]);
-                distances[i][j] = ed;
-                distances[j][i] = ed;
+
+    for (int i = 0; i < N; ++i)
+    {
+        // initial tour
+        tour[i] = i;
+
+        for (int j = (i + 1); j < N; ++j)
+        {
+            // eucledian distance of (i, j) = (j, i)
+            distances[i][j] = distances[j][i] = euclideanDistance(
+                X[i], Y[i],
+                X[j], Y[j]
+            );
+
+            min = std::min(min, distances[i][j]);
+            max = std::max(max, distances[i][j]);
+        }
+
+        index[tour[i]] = i;
+    }
+
+    // compare distances of two edges
+    auto compare = [&](edge a, edge b) {
+        return distances[a.first][a.second] > distances[b.first][b.second];
+    };
+
+    for (int i = 0; i < N; ++i)
+    {
+        std::vector<edge> edges(N);
+
+        // fill edge vector
+        for (int j = 0; j < N; ++j)
+        {
+            edges[j] = edge(i, j);
+        }
+
+        // add edges to priority queue in ascending order using an internal heap
+        std::priority_queue<edge, std::vector<edge>, decltype(compare)> queue {compare, std::move(edges)};
+
+        for (int j = 0; j < K; ++j)
+        {
+            // j closest edge to i
+            edge test = queue.top();
+            if (test.first != test.second) {
+                neighbour[i].push_back(test.second);
+                if (DEBUG) {
+                    std::cout << "[" << test.first << ", " << test.second << "] = " << distances[test.first][test.second] << " ";
+                }
             }
+            // pop edge on queue
+            queue.pop();
+        }
+        if (DEBUG) {
+            std::cout << std::endl;
         }
     }
 
-    //tour = greedyTour(tour, X, Y, distances);
+    // initial nearest neighbour serach
+    tour = nearestNeighbour(tour, distances);
 
-    tour = nearestNeighbour(X, Y, tour, distances);
+    // optimize with 2-opt limited to K neighbours
+    tour = twoOpt(tour, distances, neighbour, index, min, max);
 
-    tour = twoOpt(X, Y, tour, distances);
-
+    // print final tour
     for (int i = 0; i < tour.size(); ++i)
     {
-        std::cout << tour[i] << endl;
+        std::cout << tour[i] << std::endl;
     }
 
     if (DEBUG) {
@@ -184,7 +261,7 @@ int main()
         }
         totalDistance += distances[tour[tour.size()-1]][tour[0]];
 
-        std::cout << "total: " << totalDistance << endl;
+        std::cout << "total: " << totalDistance << std::endl;
     }
 
     return 0;
