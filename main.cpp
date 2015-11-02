@@ -154,8 +154,10 @@ int main()
     std::cin >> N;
 
     // number of neighbours to check on 2opt
-    int K = 100;
+    int K = 80;
     K = std::min(K, N);
+
+    int numIt = 40;
 
     // shortest distance between two points
     int min = INT_MAX;
@@ -241,16 +243,32 @@ int main()
         }
     }
 
-    // initial nearest neighbour serach
-    tour = nearestNeighbour(tour, distances);
+    std::vector<int> bestTour(N);
+    int minDistance = INT_MAX;
 
-    // optimize with 2-opt limited to K neighbours
-    tour = twoOpt(tour, distances, neighbour, index, min, max);
+    for (int i = 0; i < numIt; i++) {    
+        // initial nearest neighbour serach
+        tour = nearestNeighbour(tour, distances);
+
+        // optimize with 2-opt limited to K neighbours
+        tour = twoOpt(tour, distances, neighbour, index, min, max);
+
+        int totalDistance = 0;
+        for (int i = 0; i < tour.size() - 1; ++i) {
+            totalDistance += distances[tour[i]][tour[i+1]];
+        }
+        totalDistance += distances[tour[tour.size()-1]][tour[0]];
+
+        if (totalDistance < minDistance) {
+            minDistance = totalDistance;
+            bestTour = tour;
+        }
+    }
 
     // print final tour
-    for (int i = 0; i < tour.size(); ++i)
+    for (int i = 0; i < bestTour.size(); ++i)
     {
-        std::cout << tour[i] << std::endl;
+        std::cout << bestTour[i] << std::endl;
     }
 
     if (DEBUG) {
