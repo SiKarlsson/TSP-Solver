@@ -122,6 +122,81 @@ inline std::vector<int> greedyTour(std::vector<int> tour, std::vector<std::vecto
 }
 */
 
+inline std::vector<int> greedyTour(std::vector<int> tour, std::vector<std::vector<int>> distances, std::vector<std::vector<int>> neighbour)
+{
+    std::vector<int> degrees(distances.size());
+    for (int i = 0; i < degrees.size(); ++i)
+    {
+        degrees[i] = 0;
+    }
+    std::vector<edge> edges;
+    int x;
+    int y;
+    int minDistance;
+    int dist;
+    std::cout << "1" << std::endl;
+    for (int n = 0; n < tour.size(); ++n) {
+        std::cout << "n: " << n << std::endl;
+        minDistance = INT_MAX;
+        for (int i = 0; i < distances.size(); ++i) {
+            dist = distances[i][neighbour[i][0]];
+
+            if (dist < minDistance && degrees[i] < 2 && degrees[neighbour[i][0]] < 2) {
+                minDistance = dist;
+                x = i;
+                y = neighbour[i][0];
+            }
+
+        }
+        std::cout << "x: " << x << ", y: " << y << std::endl;
+        degrees[x]++;
+        degrees[y]++;
+        neighbour[x].erase(neighbour[x].begin());
+        int pos = find(neighbour[y].begin(), neighbour[y].end(), x) - neighbour[y].begin();
+        neighbour[y].erase(neighbour[y].begin() + pos);
+        //edges.push_back(edge(std::min(x, y), std::max(x, y)));
+        edges.push_back(edge(x, y));
+
+        /*
+        for (int i = 0; i < neighbour.size(); ++i) {
+            for (int j = 0; j < neighbour[i].size(); ++j) {
+                std::cout << neighbour[i][j] << " ";
+            }
+            std::cout << std::endl;
+        }
+        */
+    }
+    std::cout << "2" << std::endl;
+
+    int test;
+
+    tour[0] = edges[0].first;
+    tour[1] = edges[0].second;
+    test = edges[0].second;
+    edges[0] = edge(-1, -1);
+
+    std::cout << "3" << std::endl;
+    for (int i = 2; i < edges.size(); ++i) {
+        for (int j = 0; j < edges.size(); ++j)
+        {
+            if (edges[j].first == test) {
+                tour[i] = edges[j].second;
+                test = edges[j].second;
+                edges[j] = edge(-1, -1);
+                break;
+            } else if (edges[j].second == test ) {
+                tour[i] = edges[j].first;
+                test = edges[j].first;
+                edges[j] = edge(-1, -1);
+                break;
+            }
+        }
+    }
+    std::cout << "4" << std::endl;
+
+    return tour;
+}
+
 inline std::vector<int> nearestNeighbour(std::vector<int> tour, std::vector<std::vector<int>> distances)
 {
     int nearestIndex, nearestFound, temp;
@@ -157,7 +232,7 @@ int main()
     int K = 80;
     K = std::min(K, N);
 
-    int numIt = 40;
+    int numIt = 1;
 
     // shortest distance between two points
     int min = INT_MAX;
@@ -246,12 +321,14 @@ int main()
     std::vector<int> bestTour(N);
     int minDistance = INT_MAX;
 
-    for (int i = 0; i < numIt; i++) {    
+    for (int i = 0; i < numIt; i++) {
         // initial nearest neighbour serach
-        tour = nearestNeighbour(tour, distances);
+        //tour = nearestNeighbour(tour, distances);
+
+        tour = greedyTour(tour, distances, neighbour);
 
         // optimize with 2-opt limited to K neighbours
-        tour = twoOpt(tour, distances, neighbour, index, min, max);
+        //tour = twoOpt(tour, distances, neighbour, index, min, max);
 
         int totalDistance = 0;
         for (int i = 0; i < tour.size() - 1; ++i) {
@@ -275,6 +352,7 @@ int main()
         int totalDistance = 0;
         for (int i = 0; i < tour.size() - 1; ++i)
         {
+            std::cout << X[bestTour[i]] << " " << Y[bestTour[i]] << std::endl;
             totalDistance += distances[tour[i]][tour[i+1]];
         }
         totalDistance += distances[tour[tour.size()-1]][tour[0]];
